@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Model;
 
 use DB;
 
+use App\Http\Controllers\EncryptDecryptController;
+
 class UsuarioController extends Controller
 {
     public function login(Request $request)
@@ -24,15 +26,21 @@ class UsuarioController extends Controller
 	    ->where('clave',$clave)
 	    ->first();
 
-   	
+
+
+		
 	    if (!empty($usuario)) {
-			$token = UsuarioController::generar_token_seguro(200);
+			$generateToken= new EncryptDecryptController;
+			$arrayData=array('id'=>$usuario->id,'nombre'=>$usuario->usuario);
+			$token=$generateToken->encrypt(json_encode($arrayData));
 			$session= new TokenUsuario;
 			$session->user_id=$usuario->id;
 			$session->token=$token;
 			$session->save();
 
-			return response()->json(['res' => true, 'message' => "Bienvenido",'token'=>$session->token,'session_id'=>$session->id],200);
+			return response()->json(['res' => true,
+			 'message' => "Bienvenido",
+			 'token'=>$token],200);
 	    }else{
 	    	return response()->json(['res' => false, 'message' => "Usuario y/o contraseña incorrectos"],200);
 	    }
@@ -74,14 +82,16 @@ class UsuarioController extends Controller
 			$usuario->usuario=$nombre_usuario;
 			$usuario->clave=$clave;
 			$usuario->save();
-			$token = UsuarioController::generar_token_seguro(200);
+			$generateToken= new EncryptDecryptController;
+			$arrayData=array('id'=>$usuario->id,'nombre'=>$usuario->usuario);
+			$token=$generateToken->encrypt(json_encode($arrayData));
 			$session= new TokenUsuario;
 			$session->user_id=$usuario->id;
 			$session->token=$token;
 			$session->save();
 			DB::commit();
 			    // all good
-			return response()->json(['res' => true, 'message' => "Bienvenido",'token'=>$session->token,'session_id'=>$session->id],200);
+			return response()->json(['res' => true, 'message' => "Bienvenido",'token'=>$session->token],200);
 		} catch (\Exception $e) {
 		    DB::rollback();
 		    return response()->json(['res' => false, 'message' => "Fallo el registro",'detail'=>$e],200);
