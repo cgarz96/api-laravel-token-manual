@@ -123,11 +123,17 @@
                 });
                 const response= await request.json();
                 console.log(response)
-
                 if (response.res) {
-                    token= response.token;
-                  //  console.log(token)
+                    response.token;
+                    token=b64_to_utf8(response.token)
+                    if (token) {
+                        var data=JSON.parse(token);
+                        console.log(data)
+                    }else{
+                        console.log('No se pudo desencriptar el token.')
+                    }
                 }
+
             }
             const logout= async ()=>{ 
 
@@ -170,7 +176,14 @@
 
                 if (response.res) {
                     token= response.token;
-                    //console.log(token)
+                  //  console.log(token)
+                }
+            }
+            function b64_to_utf8( str ) {
+                try{
+                    return decodeURIComponent(escape(window.atob(str)));
+                }catch(e){
+                    return false
                 }
             }
 
